@@ -1,15 +1,15 @@
 import {shoppingCart} from '../data/cart.js';
 import {addToCart,deleteFromCart} from '../data/cart.js';
 import {products} from '../data/products.js';
-generateHTMLcart();
+import {deliveryOptions} from '../data/deliveryOption.js';
+const today=dayjs();
 
-const cartDeleteCartElement = document.querySelector('.js-delete-from-cart');
-cartDeleteCartElement.addEventListener('click', () => {
-  const productId = cartDeleteCartElement.dataset.productId;
-  const cartItemIndex = shoppingCart.findIndex((item) => item.productId === productId);
-  deleteFromCart(productId);
-  generateHTMLcart();
-});
+generateHTMLcart();
+generateDeliveryOptionHTML();
+
+
+
+
 
 function generateHTMLcart() {
   const OrderSummaryElement = document.querySelector('.js-order-summary');
@@ -22,7 +22,7 @@ function generateHTMLcart() {
     orderSummaryHTML += `
         
           <div class="cart-item-container">
-            <div class="delivery-date">
+            <div class="delivery-date js-delivery-date-${cartItem.productId}">
               Delivery date: Tuesday, June 21
             </div>
 
@@ -56,20 +56,24 @@ function generateHTMLcart() {
                 </div>
                 <div class="delivery-option">
                   <input type="radio" checked
-                    class="delivery-option-input"
+                    class="delivery-option-input js-delivery-option-input"
+                    data-delivery-option-id="1"
+                    data-product-id="${cartItem.productId}"
                     name="delivery-option-${cartItem.productId}">
                   <div>
                     <div class="delivery-option-date">
                       Tuesday, June 21
                     </div>
-                    <div class="delivery-option-price">
+                    <div class="delivery-option-price js-delivery-option-price">
                       FREE Shipping
                     </div>
                   </div>
                 </div>
                 <div class="delivery-option">
                   <input type="radio"
-                    class="delivery-option-input"
+                    class="delivery-option-input js-delivery-option-input"
+                    data-delivery-option-id="2"
+                    data-product-id="${cartItem.productId}"
                     name="delivery-option-${cartItem.productId}">
                   <div>
                     <div class="delivery-option-date">
@@ -82,8 +86,10 @@ function generateHTMLcart() {
                 </div>
                 <div class="delivery-option">
                   <input type="radio"
-                    class="delivery-option-input"
-                    name="delivery-option-${cartItem.productId}">
+                    class="delivery-option-input js-delivery-option-input"
+                    data-product-id="${cartItem.productId}"
+                    name="delivery-option-${cartItem.productId}"
+                    data-delivery-option-id="3">
                   <div>
                     <div class="delivery-option-date">
                       Monday, June 13
@@ -137,6 +143,40 @@ function generateHTMLcart() {
         </div>`;
   OrderSummaryElement.innerHTML = orderSummaryHTML;
   paymentSummaryElement.innerHTML = paymentSummaryHTML;
+  
+
+listnerDeletFromCart();
+}
+
+
+
+function listnerDeletFromCart() {
+  let cartDeleteCartElement = document.querySelectorAll('.js-delete-from-cart');
+  cartDeleteCartElement.forEach((element) => {
+    element.addEventListener('click', () => {
+      const productId = element.dataset.productId;
+      const cartItemIndex = shoppingCart.findIndex((item) => item.productId === productId);
+      deleteFromCart(productId);
+      generateHTMLcart();
+      generateDeliveryOptionHTML();
+    });
+  });
+}
+
+function generateDeliveryOptionHTML() {
+  const radioDeliveryOptionElements = document.querySelectorAll('.js-delivery-option-input');
+  radioDeliveryOptionElements.forEach((radioDeliveryOptionElement) => {
+    radioDeliveryOptionElement.addEventListener('change', () => {
+      const deliveryOptionId = radioDeliveryOptionElement.dataset.deliveryOptionId;
+      const productId = radioDeliveryOptionElement.dataset.productId;
+      const deliveryOption = deliveryOptions.find((option) => option.id === deliveryOptionId);
+      const deliveryDate = today.add(deliveryOption.estimatedDays, 'days').format('dddd, MMMM D');
+      const deliveryDateElement = document.querySelector(`.js-delivery-date-${productId}`);
+      const deliveryFee = radioDeliveryOptionElement.parentElement.querySelector('.js-delivery-option-price');
+      deliveryDateElement.textContent = `Delivery date: ${deliveryDate}`;
+
+    });
+  });
 }
 
 function updateCartQuantity() {
@@ -148,6 +188,11 @@ function updateCartQuantity() {
     generateHTMLcart();
   
 });
+}
+function deliveryDate(estimatedDays) {
+  const deliveryDate=today.add(estimatedDays, 'days').format('dddd, MMMM D');
+  return deliveryDate;
+
 }
 
 
