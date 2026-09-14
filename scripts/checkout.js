@@ -1,13 +1,25 @@
 import {shoppingCart} from '../data/cart.js';
-import {addToCart} from '../data/cart.js';
+import {addToCart,deleteFromCart} from '../data/cart.js';
 import {products} from '../data/products.js';
-const OrderSummaryElement = document.querySelector('.js-order-summary');
-const paymentSummaryElement = document.querySelector('.js-payment-summary');
-let orderSummaryHTML = '';
-let paymentSummaryHTML = '';
-shoppingCart.forEach((cartItem) => {
-  const product = products.find((product) => product.id === cartItem.productId);
-  orderSummaryHTML += `
+generateHTMLcart();
+
+const cartDeleteCartElement = document.querySelector('.js-delete-from-cart');
+cartDeleteCartElement.addEventListener('click', () => {
+  const productId = cartDeleteCartElement.dataset.productId;
+  const cartItemIndex = shoppingCart.findIndex((item) => item.productId === productId);
+  deleteFromCart(productId);
+  generateHTMLcart();
+});
+
+function generateHTMLcart() {
+  const OrderSummaryElement = document.querySelector('.js-order-summary');
+  const paymentSummaryElement = document.querySelector('.js-payment-summary');
+
+  let orderSummaryHTML = '';
+  let paymentSummaryHTML = '';
+  shoppingCart.forEach((cartItem) => {
+    const product = products.find((product) => product.id === cartItem.productId);
+    orderSummaryHTML += `
         
           <div class="cart-item-container">
             <div class="delivery-date">
@@ -32,7 +44,7 @@ shoppingCart.forEach((cartItem) => {
                   <span class="update-quantity-link link-primary">
                     Update
                   </span>
-                  <span class="delete-quantity-link link-primary">
+                  <span class="delete-quantity-link link-primary js-delete-from-cart" data-product-id="${cartItem.productId}">
                     Delete
                   </span>
                 </div>
@@ -88,8 +100,8 @@ shoppingCart.forEach((cartItem) => {
          
         
       `;
-});
-paymentSummaryHTML += `<div class="payment-summary">
+  });
+  paymentSummaryHTML += `<div class="payment-summary">
           <div class="payment-summary-title">
             Order Summary
           </div>
@@ -123,9 +135,20 @@ paymentSummaryHTML += `<div class="payment-summary">
             Place your order
           </button>
         </div>`;
-console.log(orderSummaryHTML);
-OrderSummaryElement.innerHTML = orderSummaryHTML;
-paymentSummaryElement.innerHTML = paymentSummaryHTML;
+  OrderSummaryElement.innerHTML = orderSummaryHTML;
+  paymentSummaryElement.innerHTML = paymentSummaryHTML;
+}
+
+function updateCartQuantity() {
+  const cartDeleteCartElement = document.querySelector('.js-delete-from-cart');
+  const productId = cartDeleteCartElement.dataset.productId;
+  cartDeleteCartElement.addEventListener('click', () => {
+    const cartItemIndex = shoppingCart.findIndex((item) => item.productId === productId);
+    deleteFromCart(productId);
+    generateHTMLcart();
+  
+});
+}
 
 
 

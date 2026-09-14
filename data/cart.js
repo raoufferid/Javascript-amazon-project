@@ -1,32 +1,60 @@
-export const shoppingCart = [
-    {
-        "productId": "83d4ca15-0f35-48f5-b7a3-1ea210004f2e",
-        "quantity": 3
-    },
-    {
-        "productId": "15b6fc6f-327a-4ec4-896f-486349e85a3d",
-        "quantity": 3
-    },
-    {
-        "productId": "e43638ce-6aa0-4b85-b27f-e1d07eb678c6",
-        "quantity": "1"
-    }
-];
- let cartQuantity=0;
+const shoppingCartStorageKey = 'shoppingCart';
+
+function loadShoppingCart() {
+  try {
+    const cartFromStorage = localStorage.getItem(shoppingCartStorageKey);
+    return cartFromStorage ? JSON.parse(cartFromStorage) : [];
+  } catch (error) {
+    console.warn('Could not read shoppingCart from localStorage:', error);
+    return [];
+  }
+}
+
+export let shoppingCart = loadShoppingCart();
+let cartQuantity = 0;
+
 export function addToCart(button) {
-  let matchingItem;
- 
+  let matchingItem = false;
+  const selectedQuantity = parseInt(button.parentElement.querySelector('select').value, 10);
+
   shoppingCart.forEach((item) => {
     if (item.productId === button.dataset.productId) {
-      item.quantity = parseInt(item.quantity) + parseInt(button.parentElement.querySelector('select').value);
+      item.quantity = parseInt(item.quantity, 10) + selectedQuantity;
       matchingItem = true;
-      cartQuantity += parseInt(button.parentElement.querySelector('select').value);
+      cartQuantity += selectedQuantity;
       return;
     }
   });
+
   if (!matchingItem) {
-    shoppingCart.push({ productId: button.dataset.productId, quantity: button.parentElement.querySelector('select').value });
-    cartQuantity += parseInt(button.parentElement.querySelector('select').value);
+    shoppingCart.push({ productId: button.dataset.productId, quantity: selectedQuantity });
+    cartQuantity += selectedQuantity;
   }
+
+  localStorage.setItem(shoppingCartStorageKey, JSON.stringify(shoppingCart));
   return cartQuantity;
-  }
+}
+
+export function deleteFromCart(productId) {
+  let matchingItem = false;
+
+
+  shoppingCart.forEach((item) => {
+    if (item.productId === productId) {
+      const newQuantity=parseInt(item.quantity, 10) - 1;
+      
+      if (newQuantity <= 0) {
+        const cartItemIndex = shoppingCart.findIndex((item) => item.productId === productId);
+        shoppingCart.splice(cartItemIndex, 1);
+      } else {
+        item.quantity = newQuantity;
+      }
+      matchingItem = true;
+      cartQuantity -= 1;
+      return;
+    }
+  });
+
+    localStorage.setItem(shoppingCartStorageKey, JSON.stringify(shoppingCart));
+  return cartQuantity;
+}
