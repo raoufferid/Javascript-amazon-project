@@ -3,6 +3,9 @@ import {addToCart,deleteFromCart} from '../data/cart.js';
 import {products} from '../data/products.js';
 import {deliveryOptions} from '../data/deliveryOption.js';
 const today=dayjs();
+let totalItems=0;
+let totalPrice=0;
+let totalshipping=0;
 
 generateHTMLcart();
 generateDeliveryOptionHTML();
@@ -18,7 +21,9 @@ function generateHTMLcart() {
   let orderSummaryHTML = '';
   let paymentSummaryHTML = '';
   shoppingCart.forEach((cartItem) => {
+    totalItems += cartItem.quantity;
     const product = products.find((product) => product.id === cartItem.productId);
+    totalPrice += (product.priceCents / 100) * cartItem.quantity;
     orderSummaryHTML += `
         
           <div class="cart-item-container">
@@ -113,28 +118,28 @@ function generateHTMLcart() {
           </div>
 
           <div class="payment-summary-row">
-            <div>Items (3):</div>
-            <div class="payment-summary-money">$42.75</div>
+            <div>Items (${totalItems}):</div>
+            <div class="payment-summary-money">$${totalPrice.toFixed(2)}</div>
           </div>
 
           <div class="payment-summary-row">
             <div>Shipping &amp; handling:</div>
-            <div class="payment-summary-money">$4.99</div>
+            <div class="payment-summary-money js-shipping-money">$${totalshipping.toFixed(2)}</div>
           </div>
 
           <div class="payment-summary-row subtotal-row">
             <div>Total before tax:</div>
-            <div class="payment-summary-money">$47.74</div>
+            <div class="payment-summary-money">$${(totalPrice + totalshipping).toFixed(2)}</div>
           </div>
 
           <div class="payment-summary-row">
             <div>Estimated tax (10%):</div>
-            <div class="payment-summary-money">$4.77</div>
+            <div class="payment-summary-money">$${((totalPrice + totalshipping) * 0.1).toFixed(2)}</div>
           </div>
 
           <div class="payment-summary-row total-row">
             <div>Order total:</div>
-            <div class="payment-summary-money">$52.51</div>
+            <div class="payment-summary-money js-order-total">$${(totalPrice + totalshipping + (totalPrice + totalshipping) * 0.1).toFixed(2)}</div>
           </div>
 
           <button class="place-order-button button-primary">
@@ -143,7 +148,7 @@ function generateHTMLcart() {
         </div>`;
   OrderSummaryElement.innerHTML = orderSummaryHTML;
   paymentSummaryElement.innerHTML = paymentSummaryHTML;
-  
+  updateTotalshiping();
 
 listnerDeletFromCart();
 }
@@ -177,6 +182,16 @@ function generateDeliveryOptionHTML() {
 
     });
   });
+}
+function updateTotalshiping() {
+ const shippingMoneyElement = document.querySelector('.js-shipping-money');
+  const selectedDeliveryOptions = document.querySelectorAll('.js-delivery-option-input:checked');
+  let totalShipping = 0;
+  selectedDeliveryOptions.forEach((option) => {
+    totalShipping += parseFloat(option.dataset.deliveryOptionPrice);
+  });
+  shippingMoneyElement.textContent = `$${totalShipping.toFixed(2)}`;
+  totalshipping = totalShipping;
 }
 
 function updateCartQuantity() {

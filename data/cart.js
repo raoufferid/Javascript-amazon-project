@@ -58,3 +58,10 @@ export function deleteFromCart(productId) {
     localStorage.setItem(shoppingCartStorageKey, JSON.stringify(shoppingCart));
   return cartQuantity;
 }
+export function getCartQuantity() {
+  let total = 0;
+  shoppingCart.forEach((item) => {
+    total += parseInt(item.quantity, 10);
+  });
+  return total;
+}
